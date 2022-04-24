@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soup.neumorphism.NeumorphCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    app:neumorph_backgroundColor="#EA0606"
+    app:neumorph_shadowColorLight="#CDDC39"
+    app:neumorph_shadowElevation="@dimen/_4mdp"
+    app:neumorph_shapeAppearance="@style/myneu">
+
+    <soup.neumorphism.NeumorphCardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:neumorph_shadowElevation="@dimen/_10mdp"
+        app:neumorph_shapeType="pressed">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:src="@drawable/ic_baseline_music_note_24"
+            app:tint="@color/black" />
+
+    </soup.neumorphism.NeumorphCardView>
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:text="song name"
+        android:textColor="@color/white" />
+</soup.neumorphism.NeumorphCardView>
