@@ -1,19 +1,43 @@
 package com.example.musicplayer
 
 
-import android.R
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Binder
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
+import android.util.Log
 import android.widget.Toast
+import androidx.lifecycle.MutableLiveData
 
 class MusicService : Service() {
 
+    private val binder = LocalBinder()
+    lateinit var mediaList: List<AudioModel>
+    lateinit var mediaPlayer: MediaPlayer
+    val index = MutableLiveData<Int>()
+    val isLooping = MutableLiveData<Boolean>(false)
+    val repeatAll = MutableLiveData<Boolean>(true)
+
+
+    inner class LocalBinder : Binder() {
+
+        fun getService(): MusicService = this@MusicService
+    }
+
+    override fun onBind(intent: Intent): IBinder? {
+        return binder
+    }
+
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+
+        return START_REDELIVER_INTENT
+    }
+
+    fun pauseMedia() {
+
+    }
 
     override fun onCreate() {
 /*        // Start up the thread running the service.  Note that we create a
@@ -30,20 +54,63 @@ class MusicService : Service() {
 
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-
-        
-        return START_REDELIVER_INTENT
-    }
-
-    override fun onBind(intent: Intent): IBinder? {
-        // We don't provide binding, so return null
-        return null
-    }
 
     override fun onDestroy() {
         Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show()
     }
+
+    fun startPlaying(mediaList: List<AudioModel>, index: Int) {
+        this.mediaList = mediaList
+        this.index.value = index
+        val media = mediaList[index]
+        val uri = Uri.parse(media.path)
+        mediaPlayer = MediaPlayer.create(this, uri)
+        mediaPlayer.isLooping = false
+        mediaPlayer.start()
+        handleCompletion()
+    }
+
+    private fun handleCompletion() {
+
+        mediaPlayer.setOnCompletionListener {
+            if (mediaPlayer.isLooping) {
+                startMedia()
+            } else {
+
+                index.value = index.value?.plus(1)
+                Log.d("ali", "completed is looping playerViewModel.index" + index.value.toString())
+                Log.d("ali", "completed is loopingplayerViewModel.mediaList.size" + mediaList.size.toString())
+
+                if (index.value != mediaList.size && repeatAll.value!!) {
+                    Log.d("ali", "completed is repeat all")
+                    mediaPlayer.stop()
+                    mediaPlayer.release()
+                    startMedia()
+                } else {
+                    Log.d("ali", "completed is looping finish")
+                    mediaPlayer.release()
+                }
+            }
+        }
+    }
+
+    fun startMedia() {
+
+        if (index.value == mediaList.size) index.value = 0
+        if (index.value == -1) index.value = mediaList.size - 1
+        val media = mediaList[index.value!!]
+        val uri = Uri.parse(media.path)
+        //binding.songName.text = media.title
+        Log.d("ali", "startMedia: " + media.title)
+        mediaPlayer = MediaPlayer.create(this, uri)
+        // binding.songTime.text = computeTime(mediaPlayer.duration)
+        handleCompletion()
+        mediaPlayer.isLooping = isLooping.value ?: false
+        mediaPlayer.start()
+
+    }
+
+
 }
 
 /*
@@ -120,3 +187,15 @@ class LocalService : Service() {
         mNM!!.notify(NOTIFICATION, notification)
     }
 }*/
+private var thisBinder: YourBinder? = null
+
+fun oncreate() {
+    thisBinder = YourBinder() //don't forget this.
+}
+
+
+class YourBinder : Binder()
+
+fun onBind(intent: Intent?): IBinder? {
+    return thisBinder
+}

@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 
-class PlayerViewModel(private val state: SavedStateHandle) : ViewModel() {
+class PlayerViewModel(state: SavedStateHandle) : ViewModel() {
     var index = state.get<Int>("index") ?: 0
 
     lateinit var mediaList: List<AudioModel>

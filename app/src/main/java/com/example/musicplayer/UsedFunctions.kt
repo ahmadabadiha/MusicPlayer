@@ -8,7 +8,7 @@ import android.util.Log
 
 fun getAllAudioFromDevice(context: Context): List<AudioModel> {
     val tempAudioList: MutableList<AudioModel> = ArrayList()
-    val uri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+    val uri: Uri = MediaStore.Audio.Media.INTERNAL_CONTENT_URI
     val projection =
         arrayOf(MediaStore.Audio.AudioColumns.DATA,MediaStore.Audio.AudioColumns.TITLE, MediaStore.Audio.AudioColumns.ALBUM, MediaStore.Audio.ArtistColumns.ARTIST)
     val c: Cursor? =
