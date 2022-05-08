@@ -6,33 +6,33 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.musicplayer.databinding.FragmentAlbumsBinding
+import com.example.musicplayer.databinding.FragmentArtistsBinding
+import com.example.musicplayer.databinding.FragmentFilteredSongsBinding
 
-class AlbumsFragment : Fragment(R.layout.fragment_albums) {
+class FilteredSongsFragment : Fragment(R.layout.fragment_filtered_songs) {
     private val sharedViewModel: SharedViewModel by activityViewModels()
-    private var _binding: FragmentAlbumsBinding? = null
+    private var _binding: FragmentFilteredSongsBinding? = null
     private val binding get() = _binding!!
     private lateinit var musicAdapter: MusicAdapter
+    private val args: FilteredSongsFragmentArgs by navArgs()
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentAlbumsBinding.bind(view)
+        _binding = FragmentFilteredSongsBinding.bind(view)
         musicAdapter = MusicAdapter(::onClick)
         val list = sharedViewModel.audioList.map { audio ->
-            audio.album
+            audio.title
         }
         musicAdapter.submitList(list.distinct())
         binding.recyclerView.adapter = musicAdapter
     }
 
     private fun onClick(input: Int) {
-        sharedViewModel.audioList = sharedViewModel.audioList.filter {
-            it.album ==  musicAdapter.currentList[input]
-        }
+
         findNavController().navigate(
-            TabsFragmentDirections.actionTabsFragmentToFilteredSongsFragment(
-                null,
-                musicAdapter.currentList[input]
-            )
+            FilteredSongsFragmentDirections.actionFilteredSongsFragmentToPlayerFragment(input)
         )
     }
 

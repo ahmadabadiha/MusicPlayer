@@ -1,56 +1,112 @@
 package com.example.musicplayer
 
 
-import android.app.Service
+import android.app.*
+import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
-import android.os.Binder
-import android.os.IBinder
+import android.os.*
+import android.os.Process.THREAD_PRIORITY_AUDIO
+import android.os.Process.THREAD_PRIORITY_BACKGROUND
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC
+import androidx.core.app.NotificationCompat.getOnlyAlertOnce
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.MutableLiveData
+import kotlin.random.Random
 
 class MusicService : Service() {
+    companion object {
+        private const val notificationId = 10
+        private const val CHANNEL_ID = "01"
+        private const val TAG = "ahmadabadi"
+
+    }
 
     private val binder = LocalBinder()
     lateinit var mediaList: List<AudioModel>
-    lateinit var mediaPlayer: MediaPlayer
-    val index = MutableLiveData<Int>()
-    val isLooping = MutableLiveData<Boolean>(false)
-    val repeatAll = MutableLiveData<Boolean>(true)
 
+    @Volatile
+    lateinit var mediaPlayer: MediaPlayer
+
+    val index = MutableLiveData<Int>()
+    var repeatAll = true
+    private var serviceLooper: Looper? = null
+    private var serviceHandler: ServiceHandler? = null
+    private lateinit var message: Message
+    private var startId: Int? = null
+
+    private inner class ServiceHandler(looper: Looper) : Handler(looper) {
+        @RequiresApi(Build.VERSION_CODES.M)
+        override fun handleMessage(msg: Message) {
+            val media = mediaList[index.value ?: 0]
+            val uri = Uri.parse(media.path)
+            mediaPlayer = MediaPlayer.create(this@MusicService, uri)
+            mediaPlayer.start()
+            mediaPlayer.isLooping = false
+            handleCompletion()
+            val intent = Intent(this@MusicService, MainActivity::class.java).apply {
+                setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }
+            val pendingIntent: PendingIntent = PendingIntent.getActivity(this@MusicService, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+            val notification = NotificationCompat.Builder(this@MusicService, CHANNEL_ID)
+                .setSmallIcon(R.drawable.play)
+                .setContentTitle(mediaList[index.value!!].title)
+                .setContentText(mediaList[index.value!!].artist)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setVisibility(VISIBILITY_PUBLIC)
+                .setContentIntent(pendingIntent)
+                .setOnlyAlertOnce(true)
+                .build()
+            startForeground(111, notification)
+
+            /*    with(NotificationManagerCompat.from(this@MusicService)) {
+                    // notificationId is a unique int for each notification that you must define
+                    notify(notificationId, notification)
+                }*/
+            // Normally we would do some work here, like download a file.
+            // For our sample, we just sleep for 5 seconds.
+
+            // Stop the service using the startId, so that we don't stop
+            // the service in the middle of handling another job
+            stopSelf(msg.arg1)
+        }
+    }
 
     inner class LocalBinder : Binder() {
 
         fun getService(): MusicService = this@MusicService
     }
 
-    override fun onBind(intent: Intent): IBinder? {
+    override fun onBind(intent: Intent): IBinder {
+
         return binder
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        createNotificationChannel()
 
-        return START_REDELIVER_INTENT
+        this.startId = startId
+        return START_STICKY
     }
 
     fun pauseMedia() {
-
+        mediaPlayer.pause()
     }
 
     override fun onCreate() {
-/*        // Start up the thread running the service.  Note that we create a
-        // separate thread because the service normally runs in the process's
-        // main thread, which we don't want to block.  We also make it
-        // background priority so CPU-intensive work will not disrupt our UI.
-        HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND).apply {
+        HandlerThread("ServiceStartArguments", THREAD_PRIORITY_AUDIO).apply {
             start()
 
             // Get the HandlerThread's Looper and use it for our Handler
             serviceLooper = looper
             serviceHandler = ServiceHandler(looper)
-        }*/
+        }
 
     }
 
@@ -59,32 +115,50 @@ class MusicService : Service() {
         Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show()
     }
 
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "music play channel"
+            val descriptionText = "notification when music is playing"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
     fun startPlaying(mediaList: List<AudioModel>, index: Int) {
+
         this.mediaList = mediaList
         this.index.value = index
-        val media = mediaList[index]
-        val uri = Uri.parse(media.path)
-        mediaPlayer = MediaPlayer.create(this, uri)
-        mediaPlayer.isLooping = false
-        mediaPlayer.start()
-        handleCompletion()
+        serviceHandler?.obtainMessage()?.also { msg ->
+            msg.arg1 = startId!!
+            serviceHandler?.sendMessage(msg)
+        }
+
     }
 
     private fun handleCompletion() {
 
         mediaPlayer.setOnCompletionListener {
+
             if (mediaPlayer.isLooping) {
                 startMedia()
             } else {
 
-                index.value = index.value?.plus(1)
+                index.postValue(index.value?.plus(1))
                 Log.d("ali", "completed is looping playerViewModel.index" + index.value.toString())
                 Log.d("ali", "completed is loopingplayerViewModel.mediaList.size" + mediaList.size.toString())
 
-                if (index.value != mediaList.size && repeatAll.value!!) {
+                if (index.value != mediaList.size && repeatAll) {
                     Log.d("ali", "completed is repeat all")
                     mediaPlayer.stop()
-                    mediaPlayer.release()
+
                     startMedia()
                 } else {
                     Log.d("ali", "completed is looping finish")
@@ -92,24 +166,44 @@ class MusicService : Service() {
                 }
             }
         }
+        updateNotification()
+
     }
 
     fun startMedia() {
 
-        if (index.value == mediaList.size) index.value = 0
-        if (index.value == -1) index.value = mediaList.size - 1
-        val media = mediaList[index.value!!]
+        if (index.value == mediaList.size) index.postValue(0)
+        if (index.value == -1) index.postValue(mediaList.size - 1)
+        val media = mediaList[index.value ?: 0]
         val uri = Uri.parse(media.path)
-        //binding.songName.text = media.title
         Log.d("ali", "startMedia: " + media.title)
         mediaPlayer = MediaPlayer.create(this, uri)
-        // binding.songTime.text = computeTime(mediaPlayer.duration)
-        handleCompletion()
-        mediaPlayer.isLooping = isLooping.value ?: false
         mediaPlayer.start()
+        handleCompletion()
+    }
+
+    fun updateLooping(b: Boolean) {
 
     }
 
+    fun updateNotification() {
+        val intent = Intent(this@MusicService, MainActivity::class.java).apply {
+            setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(this@MusicService, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        val notification = NotificationCompat.Builder(this@MusicService, CHANNEL_ID)
+            .setSmallIcon(R.drawable.play)
+            .setContentTitle(mediaList[index.value!!].title)
+            .setContentText(mediaList[index.value!!].artist)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setVisibility(VISIBILITY_PUBLIC)
+            .setContentIntent(pendingIntent)
+            .setOnlyAlertOnce(true)
+            .build()
+        startForeground(111, notification)
+
+    }
 
 }
 
@@ -174,7 +268,7 @@ class LocalService : Service() {
         )
 
         // Set the info for the views that show in the notification panel.
-        val notification: Notification = Builder(this)
+        val notification: Notification = Notification.Builder(this,"gh")
             .setSmallIcon(R.drawable.stat_sample) // the status icon
             .setTicker(text) // the status text
             .setWhen(System.currentTimeMillis()) // the time stamp
@@ -186,16 +280,5 @@ class LocalService : Service() {
         // Send the notification.
         mNM!!.notify(NOTIFICATION, notification)
     }
-}*/
-private var thisBinder: YourBinder? = null
-
-fun oncreate() {
-    thisBinder = YourBinder() //don't forget this.
 }
-
-
-class YourBinder : Binder()
-
-fun onBind(intent: Intent?): IBinder? {
-    return thisBinder
-}
+*/

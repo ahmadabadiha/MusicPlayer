@@ -1,6 +1,5 @@
 package com.example.musicplayer
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.musicplayer.databinding.ListItemBinding
 
-class MyAdapter(private val onClick: (input: Int) -> Unit) : ListAdapter<String, MyAdapter.MyViewHolder>(DiffCallback()) {
+class MusicAdapter(private val onClick: (input: Int) -> Unit) : ListAdapter<String, MusicAdapter.MyViewHolder>(DiffCallback()) {
 
     inner class MyViewHolder(private val binding: ListItemBinding) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
         fun fill(item: String) {

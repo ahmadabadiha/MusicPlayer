@@ -10,8 +10,10 @@
         android:label="TabsFragment" >
         <action
             android:id="@+id/action_tabsFragment_to_playerFragment"
-            app:destination="@id/playerFragment"
-            app:exitAnim="@android:anim/fade_in" />
+            app:destination="@id/playerFragment" />
+        <action
+            android:id="@+id/action_tabsFragment_to_filteredSongsFragment"
+            app:destination="@id/filteredSongsFragment" />
     </fragment>
     <fragment
         android:id="@+id/playerFragment"
@@ -20,5 +22,21 @@
         <argument
             android:name="index"
             app:argType="integer" />
+    </fragment>
+    <fragment
+        android:id="@+id/filteredSongsFragment"
+        android:name="com.example.musicplayer.FilteredSongsFragment"
+        android:label="FilteredSongsFragment" >
+        <argument
+            android:name="artist"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="album"
+            app:argType="string"
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_filteredSongsFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
     </fragment>
 </navigation>
