@@ -6,27 +6,30 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
-import android.net.Uri
-import android.os.*
+import android.os.Build
+import android.os.Bundle
+import android.os.IBinder
+import android.os.PersistableBundle
 import android.util.Log
-import android.view.View
 import android.view.animation.Animation
 import android.view.animation.RotateAnimation
 import android.widget.SeekBar
 import android.widget.Toast
-import androidx.fragment.app.Fragment
+import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.musicplayer.databinding.FragmentPlayerBinding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.lang.IllegalStateException
 import java.util.concurrent.TimeUnit
 
-
-class PlayerFragment : Fragment(R.layout.fragment_player) {
-    private val sharedViewModel: SharedViewModel by activityViewModels()
-    private val playerViewModel: PlayerViewModel by viewModels()
+class PlayerActivity : AppCompatActivity(), ServiceConnection {
+    //private val sharedViewModel: SharedViewModel by activityViewModels()
+    //private val playerViewModel: PlayerViewModel by viewModels()
     private var _binding: FragmentPlayerBinding? = null
     private val binding get() = _binding!!
     private lateinit var mediaPlayer: MediaPlayer
@@ -34,57 +37,50 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
     private var repeatAll = true
     private lateinit var musicService: MusicService
     private var mBound = false
-    private val connection = object : ServiceConnection {
 
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            val binder = service as MusicService.LocalBinder
-            musicService = binder.getService()
-            Log.d("ahmadabadi", "onServiceConnected")
-            mBound = true
-        }
-
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            Log.d("ahmadabadi", "onServiceDisconnected")
-
-            mBound = false
-        }
+    companion object {
+        private const val TAG = "ahmadabadiha"
     }
 
+    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+        val binder = service as MusicService.LocalBinder
+        musicService = binder.getService()
+        Log.d(TAG, "onServiceConnected")
+        mBound = true
+    }
+
+    override fun onServiceDisconnected(name: ComponentName?) {
+        Log.d(TAG, "onServiceDisconnected")
+        mBound = false
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Intent(context, MusicService::class.java).also { intent ->
+        _binding = FragmentPlayerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        serviceBind()
 
-            requireActivity().applicationContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                requireActivity().applicationContext.startForegroundService(intent)
-            }
-        }
-    }
+        val r = Runnable { startRotationAnim() }
+        t = Thread(r)
+        t.start()
+        val index = intent.getIntExtra("index", 0)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentPlayerBinding.bind(view)
-        if (savedInstanceState == null) {
-            playerViewModel.mediaList = sharedViewModel.audioList
-        }
-        val rotateAnim = RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
-        rotateAnim.repeatCount = Animation.INFINITE
-        rotateAnim.duration = 300000
-        rotateAnim.start()
-        binding.coverImage.startAnimation(rotateAnim)
 
         lifecycleScope.launch {
 
             while (mBound == false) {
                 delay(10)
             }
-            musicService.startPlaying(playerViewModel.mediaList, playerViewModel.index)
+
+            musicService.startPlaying(Medias.mediaList, index)
 
             var temp1 = false
             while (true) {
                 try {
                     initSetOnclickListeners()
                     initObserveLiveData()
+                    binding.songTime.text = computeTime(musicService.mediaPlayer.duration)
                     binding.seekBar.max = musicService.mediaPlayer.duration
                     updateSeekbar()
                     temp1 = true
@@ -95,69 +91,63 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             }
 
         }
+
         binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(p0: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    Log.d("ahmadabadi", "onProgressChanged: " + progress.toString())
-                    Log.d("ahmadabadi", "onProgressChanged: " + musicService.mediaPlayer.duration.toString())
-
                     musicService.mediaPlayer.seekTo(progress)
                 }
             }
 
-
             override fun onStartTrackingTouch(p0: SeekBar?) {
-
             }
 
             override fun onStopTrackingTouch(p0: SeekBar?) {
-
             }
         })
-
-
     }
 
     private suspend fun updateSeekbar() {
         while (true) {
+            //try {
+
             val mediaPosition = musicService.mediaPlayer.currentPosition
             binding.seekBar.progress = mediaPosition
-                //(mediaPosition / musicService.mediaPlayer.duration).toInt()
-            binding.timePast.text = computeTime(mediaPosition).toString()
+            binding.timePast.text = computeTime(mediaPosition)
+            // }catch (e: IllegalStateException){
+            //    binding.seekBar.progress = binding.seekBar.max
+            //}
             delay(1000)
         }
     }
 
-    private fun startMedia() {
 
-        if (playerViewModel.index == playerViewModel.mediaList.size) playerViewModel.index = 0
-        if (playerViewModel.index == -1) playerViewModel.index = playerViewModel.mediaList.size - 1
+    private fun serviceBind() {
+        Intent(this, MusicService::class.java).also { intent ->
+            bindService(intent, this, Context.BIND_AUTO_CREATE)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            }
+        }
+    }
 
-        val media = playerViewModel.mediaList[playerViewModel.index]
-        if (media.coverImage != null) {
-            val bitmapImage = BitmapFactory.decodeByteArray(media.coverImage, 0, media.coverImage.size)
-            binding.coverImage.setImageBitmap(bitmapImage)
-        } else binding.coverImage.setImageResource(R.drawable.ic_baseline_music_note_24)
-        val uri = Uri.parse(media.path)
-        binding.songName.text = media.title
-        Log.d("ali", "startMedia: " + media.title)
-        mediaPlayer = MediaPlayer.create(requireContext(), uri)
-        binding.songTime.text = computeTime(mediaPlayer.duration)
-        handleCompletion()
-        mediaPlayer.isLooping = playerViewModel.isLooping.value ?: false
-        mediaPlayer.start()
-
+    private fun startRotationAnim() {
+        val rotateAnim = RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
+        rotateAnim.repeatCount = Animation.INFINITE
+        rotateAnim.duration = 300000
+        rotateAnim.start()
+        binding.coverImage.startAnimation(rotateAnim)
     }
 
     private fun initSetOnclickListeners() {
         binding.playIcon.setOnClickListener {
             // todo handle illegal state exception
             if (musicService.mediaPlayer.isPlaying) {
-                it.setBackgroundResource(R.drawable.play)
+                binding.playIcon.setImageResource(R.drawable.play)
                 musicService.mediaPlayer.pause()
                 binding.play.setShapeType(0)
             } else {
-                it.setBackgroundResource(R.drawable.pause)
+                binding.playIcon.setImageResource(R.drawable.pause)
                 musicService.mediaPlayer.start()
                 binding.play.setShapeType(1)
 
@@ -175,7 +165,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             Log.d(
                 "ahmadabadi", "next clicked " + musicService.index.hasObservers().toString()
             )
-            binding.playIcon.setBackgroundResource(R.drawable.pause)
+            binding.playIcon.setImageResource(R.drawable.pause)
             binding.play.setShapeType(1)
             musicService.startMedia()
         }
@@ -186,14 +176,14 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             musicService.index.postValue(handleIndexBound(temp - 1))
 
             //Log.d("ahmadabadi", "previous clicked " + musicService.index.value.toString())
-            binding.playIcon.setBackgroundResource(R.drawable.pause)
+            binding.playIcon.setImageResource(R.drawable.pause)
             binding.play.setShapeType(1)
             musicService.startMedia()
         }
 
         binding.shuffle.setOnClickListener {
             musicService.mediaList = musicService.mediaList.shuffled()
-            Toast.makeText(requireContext(), "List of songs shuffled now!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "List of songs shuffled now!", Toast.LENGTH_SHORT).show()
         }
 
         binding.repeatOne.setOnClickListener {
@@ -202,9 +192,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             if (temp) {
                 binding.repeatOne.setShapeType(1)
             } else binding.repeatOne.setShapeType(0)
-            Log.d(
-                "ahmadabadi", "repeat one clicked " + temp
-            )
+            Log.d("ahmadabadi", "repeat one clicked " + temp)
             /* if (mediaPlayer.isLooping) binding.repeatOne.setShapeType(1)
              else binding.repeatOne.setShapeType(0)*/
         }
@@ -213,6 +201,8 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             musicService.repeatAll = temp
             if (temp) binding.repeatAll.setShapeType(1)
             else binding.repeatAll.setShapeType(0)
+            Log.d("ahmadabadi", "repeat all clicked " + temp)
+
         }
     }
 
@@ -236,37 +226,16 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             } else {
                 binding.coverImage.setImageResource(R.drawable.music)
                 binding.backgroundImage.setImageResource(R.drawable.music)
-
             }
             binding.songName.text = song.title
             binding.artist.text = song.artist
             binding.album.text = song.album
-            binding.songTime.setText(computeTime(musicService.mediaPlayer.duration))
-            musicService.updateNotification()
-        }
-    }
+            try {
+                binding.songTime.text = computeTime(musicService.mediaPlayer.duration)
+            } catch (e: UninitializedPropertyAccessException) {
 
-    private fun handleCompletion() {
-        mediaPlayer.setOnCompletionListener {
-            if (mediaPlayer.isLooping) {
-                Log.d("ali", "completed is looping")
-                startMedia()
-            } else {
-
-                playerViewModel.index++
-                Log.d("ali", "completed is looping playerViewModel.index" + playerViewModel.index.toString())
-                Log.d("ali", "completed is loopingplayerViewModel.mediaList.size" + playerViewModel.mediaList.size.toString())
-
-                if (playerViewModel.index != playerViewModel.mediaList.size && repeatAll) {
-                    Log.d("ali", "completed is repeat all")
-                    mediaPlayer.stop()
-                    mediaPlayer.release()
-                    startMedia()
-                } else {
-                    Log.d("ali", "completed is looping finish")
-                    mediaPlayer.release()
-                }
             }
+            musicService.updateNotification()
         }
     }
 
@@ -278,20 +247,11 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         )
     }
 
-
-    override fun onStop() {
-        requireActivity().unbindService(connection)
-        musicService.stopForeground(true)
-        //todo handle background service and cancelling notification
-        t.interrupt()
-        super.onStop()
-    }
-
     override fun onDestroy() {
-
-        _binding = null
+        t.interrupt()
         super.onDestroy()
     }
-
-
 }
+
+
+

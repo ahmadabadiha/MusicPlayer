@@ -1,5 +1,6 @@
 package com.example.musicplayer
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -27,7 +28,11 @@ class SongsFragment : Fragment(R.layout.fragment_songs) {
     }
 
     private fun onClick(input: Int) {
-        findNavController().navigate(TabsFragmentDirections.actionTabsFragmentToPlayerFragment(input))
+        val intent = Intent(requireContext(), PlayerActivity::class.java)
+        intent.putExtra("index", input)
+        Medias.mediaList = sharedViewModel.audioList
+        startActivity(intent)
+        // findNavController().navigate(TabsFragmentDirections.actionTabsFragmentToPlayerFragment(input))
     }
 
     override fun onDestroy() {
