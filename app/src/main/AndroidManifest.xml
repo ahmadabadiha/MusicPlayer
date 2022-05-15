@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MusicPlayer">
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,11 +23,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PlayerActivity"
+            android:name=".activities.PlayerActivity"
             android:exported="true" />
 
         <service
-            android:name=".MusicService"
+            android:name=".service.MusicService"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
@@ -35,6 +35,17 @@
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
         </service>
+        <receiver
+            android:name=".broadcastreciever.NotificationBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="ACTION_PREVIOUs" />
+                <action android:name="ACTION_PLAY_PAUSE" />
+                <action android:name="ACTION_NEXT" />
+                <action android:name="ACTION_CANCEL" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

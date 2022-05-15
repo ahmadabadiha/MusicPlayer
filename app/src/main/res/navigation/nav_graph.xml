@@ -6,26 +6,15 @@
 
     <fragment
         android:id="@+id/tabsFragment"
-        android:name="com.example.musicplayer.TabsFragment"
+        android:name="com.example.musicplayer.fragments.TabsFragment"
         android:label="TabsFragment" >
-        <action
-            android:id="@+id/action_tabsFragment_to_playerFragment"
-            app:destination="@id/playerFragment" />
         <action
             android:id="@+id/action_tabsFragment_to_filteredSongsFragment"
             app:destination="@id/filteredSongsFragment" />
     </fragment>
     <fragment
-        android:id="@+id/playerFragment"
-        android:name="com.example.musicplayer.PlayerFragment"
-        android:label="PlayerFragment" >
-        <argument
-            android:name="index"
-            app:argType="integer" />
-    </fragment>
-    <fragment
         android:id="@+id/filteredSongsFragment"
-        android:name="com.example.musicplayer.FilteredSongsFragment"
+        android:name="com.example.musicplayer.fragments.FilteredSongsFragment"
         android:label="FilteredSongsFragment" >
         <argument
             android:name="artist"
@@ -35,8 +24,5 @@
             android:name="album"
             app:argType="string"
             app:nullable="true" />
-        <action
-            android:id="@+id/action_filteredSongsFragment_to_playerFragment"
-            app:destination="@id/playerFragment" />
     </fragment>
 </navigation>

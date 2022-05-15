@@ -16,12 +16,12 @@
 
     <style name="myneu">
         <item name="neumorph_cornerFamily">rounded</item>
-        <item name="neumorph_cornerSize">@dimen/_8mdp</item>
+        <item name="neumorph_cornerSize">@dimen/_16mdp</item>
     </style>
 
     <style name="myneu2">
         <item name="neumorph_cornerFamily">rounded</item>
-        <item name="neumorph_cornerSize">@dimen/_8mdp</item>
+        <item name="neumorph_cornerSize">@dimen/_80mdp</item>
     </style>
 
     <style name="myneu3">

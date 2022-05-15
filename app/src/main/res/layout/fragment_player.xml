@@ -17,8 +17,10 @@
         />
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout4"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:animateLayoutChanges="true"
         android:background="@drawable/dark_transparent">
 
         <TextView
@@ -78,7 +80,7 @@
             android:id="@+id/neu_image"
             android:layout_width="@dimen/_200mdp"
             android:layout_height="@dimen/_200mdp"
-            app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
+            app:layout_constraintBottom_toTopOf="@+id/seekBarLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/song_name"
@@ -97,13 +99,14 @@
         </soup.neumorphism.NeumorphCardView>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/constraintLayout"
+            android:id="@+id/seekBarLayout"
             android:layout_width="350dp"
             android:layout_height="57dp"
             android:layout_margin="@dimen/_16mdp"
-            app:layout_constraintBottom_toTopOf="@+id/play"
+
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/artist">
 
             <SeekBar
                 android:id="@+id/seekBar"
@@ -112,7 +115,6 @@
                 android:layout_margin="@dimen/_4mdp"
                 android:progress="60"
                 android:progressBackgroundTint="@color/white"
-
                 android:progressTint="@color/purple_700"
                 android:thumbTint="#00BCD4"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -224,7 +226,8 @@
             app:neumorph_shadowColorLight="@color/player_light_shadow"
             app:neumorph_shadowElevation="@dimen/_2mdp"
             app:neumorph_shapeAppearance="@style/myneu2"
-            app:neumorph_shapeType="pressed">
+            app:neumorph_shapeType="pressed"
+            tools:ignore="MissingConstraints">
 
             <ImageView
                 android:id="@+id/play_icon"
@@ -234,6 +237,7 @@
                 android:backgroundTint="@color/white"
                 android:clickable="true"
                 android:focusable="true"
+                android:padding="@dimen/_3mdp"
                 android:src="@drawable/pause"
                 app:tint="@color/white" />
         </soup.neumorphism.NeumorphCardView>
@@ -247,8 +251,9 @@
             app:neumorph_shadowColorDark="@color/player_dark_shadow"
             app:neumorph_shadowColorLight="@color/player_light_shadow"
             app:neumorph_shadowElevation="@dimen/_2mdp"
-            app:neumorph_shapeAppearance="@style/myneu2"
-            app:neumorph_shapeType="flat">
+            app:neumorph_shapeAppearance="@style/myneu"
+            app:neumorph_shapeType="flat"
+            tools:ignore="MissingConstraints">
 
             <ImageView
                 android:id="@+id/repeatOne_icon"
@@ -273,8 +278,9 @@
             app:neumorph_shadowColorDark="@color/player_dark_shadow"
             app:neumorph_shadowColorLight="@color/player_light_shadow"
             app:neumorph_shadowElevation="@dimen/_2mdp"
-            app:neumorph_shapeAppearance="@style/myneu2"
-            app:neumorph_shapeType="pressed">
+            app:neumorph_shapeAppearance="@style/myneu"
+            app:neumorph_shapeType="pressed"
+            tools:ignore="MissingConstraints">
 
             <ImageView
                 android:id="@+id/repeatAll_icon"
@@ -290,7 +296,8 @@
         </soup.neumorphism.NeumorphCardView>
 
 
-        <androidx.constraintlayout.helper.widget.Flow
+        <!--<androidx.constraintlayout.helper.widget.Flow
+            android:id="@+id/flow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/_16mdp"
@@ -302,8 +309,47 @@
             app:flow_wrapMode="aligned"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent" />-->
+        <soup.neumorphism.NeumorphCardView
+            android:id="@+id/center"
+            android:layout_width="@dimen/_80mdp"
+            android:layout_height="@dimen/_80mdp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/seekBarLayout"
+            app:neumorph_backgroundColor="@color/background_player"
+            app:neumorph_shadowColorDark="@color/player_dark_shadow"
+            app:neumorph_shadowColorLight="@color/player_light_shadow"
+            app:neumorph_shadowElevation="@dimen/_1mdp"
+            app:neumorph_shapeAppearance="@style/myneu2"
+            app:neumorph_shapeType="basin">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:paddingBottom="@dimen/_16mdp"
+                android:text="swipe"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_16font_mdp" />
+        </soup.neumorphism.NeumorphCardView>
+        <androidx.constraintlayout.helper.widget.CircularFlow
+            android:id="@+id/circularFlow"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:circularflow_radiusInDP="80,96,96,80,96,96"
+            app:circularflow_angles="0, 60,120, 180,240,300"
+            app:circularflow_defaultRadius="@dimen/_80mdp"
+            app:circularflow_viewCenter="@id/center"
+            app:constraint_referenced_ids="play,next,repeatAll,shuffle,repeatOne,prev"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:neumorph_shapeAppearance="@style/myneu2" >
 
 
+        </androidx.constraintlayout.helper.widget.CircularFlow>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

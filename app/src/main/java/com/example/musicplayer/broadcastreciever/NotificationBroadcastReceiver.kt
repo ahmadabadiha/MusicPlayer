@@ -1,9 +1,10 @@
-package com.example.musicplayer
+package com.example.musicplayer.broadcastreciever
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.example.musicplayer.service.MusicService
 
 class NotificationBroadcastReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {

@@ -1,4 +1,4 @@
-package com.example.musicplayer
+package com.example.musicplayer.activities
 
 import android.content.ComponentName
 import android.content.Context
@@ -9,22 +9,19 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.animation.Animation
 import android.view.animation.RotateAnimation
 import android.widget.SeekBar
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.example.musicplayer.service.MusicService
+import com.example.musicplayer.R
 import com.example.musicplayer.databinding.FragmentPlayerBinding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.lang.IllegalStateException
 import java.util.concurrent.TimeUnit
 
 class PlayerActivity : AppCompatActivity(), ServiceConnection {
@@ -45,6 +42,7 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
         val binder = service as MusicService.LocalBinder
         musicService = binder.getService()
+        musicService.foregroundActivityBound = true
         Log.d(TAG, "onServiceConnected")
         mBound = true
     }
@@ -64,7 +62,7 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
         val r = Runnable { startRotationAnim() }
         t = Thread(r)
         t.start()
-        val index = intent.getIntExtra("index", 0)
+        val index = intent.getIntExtra("index", -1)
 
 
         lifecycleScope.launch {
@@ -72,8 +70,7 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
             while (mBound == false) {
                 delay(10)
             }
-
-            musicService.startPlaying(Medias.mediaList, index)
+            if (index != -1) musicService.startPlaying(index)
 
             var temp1 = false
             while (true) {
@@ -182,11 +179,11 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
         }
 
         binding.shuffle.setOnClickListener {
-            musicService.mediaList = musicService.mediaList.shuffled()
+            MusicService.mediaList = MusicService.mediaList.shuffled()
             Toast.makeText(this, "List of songs shuffled now!", Toast.LENGTH_SHORT).show()
         }
 
-        binding.repeatOne.setOnClickListener {
+        binding.repeatOneIcon.setOnClickListener {
             val temp = !musicService.mediaPlayer.isLooping
             musicService.mediaPlayer.isLooping = temp
             if (temp) {
@@ -196,7 +193,7 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
             /* if (mediaPlayer.isLooping) binding.repeatOne.setShapeType(1)
              else binding.repeatOne.setShapeType(0)*/
         }
-        binding.repeatAll.setOnClickListener {
+        binding.repeatAllIcon.setOnClickListener {
             val temp = !musicService.repeatAll
             musicService.repeatAll = temp
             if (temp) binding.repeatAll.setShapeType(1)
@@ -208,17 +205,17 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
 
     private fun handleIndexBound(i: Int): Int {
 
-        if (i == musicService.mediaList.size) return 0
-        if (i == -1) return musicService.mediaList.lastIndex
+        if (i == MusicService.mediaList.size) return 0
+        if (i == -1) return MusicService.mediaList.lastIndex
         else return i
     }
 
     private fun initObserveLiveData() {
 
-        musicService.index.observeForever {
-            Log.d("ahmadabadi", "index observed: index = " + it.toString() + " " + musicService.mediaList[it].title)
+        musicService.index.observe(this){
+            Log.d("ahmadabadi", "index observed: index = " + it.toString() + " " + MusicService.mediaList[handleIndexBound(it)].title)
 
-            val song = musicService.mediaList[it]
+            val song = MusicService.mediaList[handleIndexBound(it)]
             if (song.coverImage != null) {
                 val bitmapImage = BitmapFactory.decodeByteArray(song.coverImage, 0, song.coverImage.size)
                 binding.coverImage.setImageBitmap(bitmapImage)
@@ -249,6 +246,8 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
 
     override fun onDestroy() {
         t.interrupt()
+        musicService.foregroundActivityBound = false
+        unbindService(this)
         super.onDestroy()
     }
 }

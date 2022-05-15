@@ -1,4 +1,4 @@
-package com.example.musicplayer
+package com.example.musicplayer.service
 
 
 import android.app.NotificationChannel
@@ -20,6 +20,11 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC
 import androidx.lifecycle.MutableLiveData
+import com.example.musicplayer.activities.MainActivity
+import com.example.musicplayer.broadcastreciever.NotificationBroadcastReceiver
+import com.example.musicplayer.R
+import com.example.musicplayer.activities.AudioModel
+import com.example.musicplayer.activities.PlayerActivity
 
 class MusicService : Service() {
     companion object {
@@ -29,10 +34,13 @@ class MusicService : Service() {
         private const val ACTION_PLAY_PAUSE = "action_play_pause"
         private const val ACTION_NEXT = "action_next"
         private const val ACTION_PREVIOUS = "action_previous"
+        private const val ACTION_CANCEL = "action_cancel"
+        lateinit var mediaList: List<AudioModel>
     }
 
     private val binder = LocalBinder()
-    lateinit var mediaList: List<AudioModel>
+    //lateinit var mediaList: List<AudioModel>
+    var foregroundActivityBound = false
 
     @Volatile
     lateinit var mediaPlayer: MediaPlayer
@@ -57,7 +65,8 @@ class MusicService : Service() {
             val intent = Intent(this@MusicService, MainActivity::class.java).apply {
                 setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }
-            updateNotification()
+
+            // updateNotification()
             /* val pendingIntent: PendingIntent = PendingIntent.getActivity(this@MusicService, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
              val notification = NotificationCompat.Builder(this@MusicService, CHANNEL_ID)
@@ -71,7 +80,7 @@ class MusicService : Service() {
                  .build()
              startForeground(111, notification)
  */
-            stopSelf(msg.arg1)
+            // stopSelf(msg.arg1)
         }
     }
 
@@ -113,6 +122,16 @@ class MusicService : Service() {
                     val temp = index.value!!
                     index.postValue(handleIndexBound(temp - 1))
                     startMedia()
+                }
+                ACTION_CANCEL -> {
+                    if (foregroundActivityBound) {
+                        mediaPlayer.stop()
+                       // index.value = index.value?.minus(1)
+                    } else {
+                        mediaPlayer.stop()
+                        mediaPlayer.release()
+                        stopForeground(true)
+                    }
                 }
             }
         }
@@ -160,9 +179,7 @@ class MusicService : Service() {
         }
     }
 
-    fun startPlaying(mediaList: List<AudioModel>, index: Int) {
-
-        this.mediaList = mediaList
+    fun startPlaying(index: Int) {
         this.index.postValue(index)
         serviceHandler?.obtainMessage()?.also { msg ->
             msg.arg1 = startId!!
@@ -229,6 +246,9 @@ class MusicService : Service() {
         val nextIntent = Intent(this, NotificationBroadcastReceiver::class.java).setAction(ACTION_NEXT)
         val nextPending = PendingIntent.getBroadcast(this, 0, nextIntent, 0)
 
+        val cancelIntent = Intent(this, NotificationBroadcastReceiver::class.java).setAction(ACTION_CANCEL)
+        val cancelPending = PendingIntent.getBroadcast(this, 0, cancelIntent, 0)
+
         val currentSong = mediaList[index.value ?: 0]// todo why elvis
         var bitmapImage: Bitmap? = null
         if (currentSong.coverImage != null) {
@@ -246,11 +266,12 @@ class MusicService : Service() {
             .addAction(R.drawable.ic_baseline_skip_previous_24, "prev", prevPending)
             .addAction(R.drawable.play, "play pause", playPausePending)
             .addAction(R.drawable.ic_baseline_skip_next_24, "next", nextPending)
+            .addAction(R.drawable.ic_baseline_close_24, "cancel", cancelPending)
             .setStyle(androidx.media.app.NotificationCompat.MediaStyle().setMediaSession(mediaSessionCompat.sessionToken))
             .setOnlyAlertOnce(true)
+            .setOngoing(false)
             .build()
         startForeground(111, notification)
-
     }
 
 }

@@ -1,38 +1,39 @@
-package com.example.musicplayer
+package com.example.musicplayer.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
-import com.example.musicplayer.databinding.FragmentAlbumsBinding
+import com.example.musicplayer.*
 import com.example.musicplayer.databinding.FragmentArtistsBinding
-import com.example.musicplayer.databinding.FragmentFilteredSongsBinding
+import com.example.musicplayer.viewmodel.SharedViewModel
 
-class FilteredSongsFragment : Fragment(R.layout.fragment_filtered_songs) {
+class ArtistsFragment : Fragment(R.layout.fragment_artists) {
     private val sharedViewModel: SharedViewModel by activityViewModels()
-    private var _binding: FragmentFilteredSongsBinding? = null
+    private var _binding: FragmentArtistsBinding? = null
     private val binding get() = _binding!!
     private lateinit var musicAdapter: MusicAdapter
-    private val args: FilteredSongsFragmentArgs by navArgs()
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentFilteredSongsBinding.bind(view)
+        _binding = FragmentArtistsBinding.bind(view)
         musicAdapter = MusicAdapter(::onClick)
         val list = sharedViewModel.audioList.map { audio ->
-            audio.title
+            audio.artist
         }
         musicAdapter.submitList(list.distinct())
         binding.recyclerView.adapter = musicAdapter
     }
 
     private fun onClick(input: Int) {
-
+      /*  MusicService.mediaList = sharedViewModel.audioList.filter {
+            it.artist ==  musicAdapter.currentList[input]
+        }*/
         findNavController().navigate(
-            FilteredSongsFragmentDirections.actionFilteredSongsFragmentToPlayerFragment(input)
+            TabsFragmentDirections.actionTabsFragmentToFilteredSongsFragment(
+                musicAdapter.currentList[input],
+                null
+            )
         )
     }
 
