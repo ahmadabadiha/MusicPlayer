@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    app:neumorph_shadowColorLight="#F0A297DD"
+    app:neumorph_shadowColorLight="@color/light_blue"
     app:neumorph_shadowColorDark="@color/player_dark_shadow"
     app:neumorph_shadowElevation="@dimen/_4mdp"
     app:neumorph_shapeAppearance="@style/myneu">
@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:background="@color/black"
             android:src="@drawable/ic_baseline_music_note_24"
-            app:tint="@color/white" />
+            app:tint="@color/light_blue" />
 
     </soup.neumorphism.NeumorphCardView>
 

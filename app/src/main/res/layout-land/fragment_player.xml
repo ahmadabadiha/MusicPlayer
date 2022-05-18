@@ -80,7 +80,7 @@
             android:layout_height="@dimen/_200mdp"
             app:layout_constraintBottom_toTopOf="@+id/seekBarLayout"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/play"
             app:layout_constraintTop_toBottomOf="@+id/song_name"
             app:neumorph_backgroundColor="#472F73"
             app:neumorph_shadowColorDark="@color/black"
@@ -98,16 +98,17 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/seekBarLayout"
-            android:layout_width="@dimen/_320mdp"
+            android:layout_width="@dimen/_560mdp"
             android:layout_height="57dp"
             android:layout_margin="@dimen/_16mdp"
+            android:layout_marginBottom="@dimen/_116mdp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/artist">
+            app:layout_constraintStart_toStartOf="parent">
 
             <SeekBar
                 android:id="@+id/seekBar"
-                android:layout_width="@dimen/_280mdp"
+                android:layout_width="@dimen/_520mdp"
                 android:layout_height="@dimen/_16mdp"
                 android:layout_margin="@dimen/_4mdp"
                 android:progressBackgroundTint="@color/white"
@@ -126,7 +127,7 @@
                 android:textColor="@color/white"
                 android:textSize="@dimen/_16font_mdp"
                 app:layout_constraintBottom_toTopOf="@id/seekBar"
-                app:layout_constraintStart_toStartOf="@+id/seekBar"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
@@ -138,7 +139,7 @@
                 android:textColor="@color/white"
                 android:textSize="@dimen/_16font_mdp"
                 app:layout_constraintBottom_toTopOf="@id/seekBar"
-                app:layout_constraintEnd_toEndOf="@id/seekBar"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -156,10 +157,12 @@
             app:neumorph_shapeAppearance="@style/myneu2"
             app:neumorph_shapeType="flat"
             tools:ignore="MissingConstraints">
+
             <View
-                android:layout_width="@dimen/_48mdp"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/_32mdp"
                 android:background="@drawable/gradient_blue" />
+
             <ImageView
                 android:id="@+id/next_icon"
                 android:layout_width="@dimen/_24mdp"
@@ -185,10 +188,12 @@
             app:neumorph_shapeAppearance="@style/myneu2"
             app:neumorph_shapeType="flat"
             tools:ignore="MissingConstraints">
+
             <View
-                android:layout_width="@dimen/_40mdp"
-                android:layout_height="@dimen/_40mdp"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/_32mdp"
                 android:background="@drawable/gradient_blue" />
+
             <ImageView
                 android:id="@+id/prev_icon"
                 android:layout_width="@dimen/_24mdp"
@@ -214,10 +219,12 @@
             app:neumorph_shapeAppearance="@style/myneu2"
             app:neumorph_shapeType="flat"
             tools:ignore="MissingConstraints">
+
             <View
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/_24mdp"
                 android:background="@drawable/gradient_blue" />
+
             <ImageView
                 android:id="@+id/shuffle_icon"
                 android:layout_width="@dimen/_20mdp"
@@ -233,28 +240,28 @@
 
         <soup.neumorphism.NeumorphCardView
             android:id="@+id/play"
-            android:layout_width="@dimen/_60mdp"
-            android:layout_height="@dimen/_60mdp"
+            android:layout_width="@dimen/_80mdp"
+            android:layout_height="@dimen/_80mdp"
             android:padding="@dimen/_8mdp"
-            app:layout_constraintBottom_toTopOf="@+id/center"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:neumorph_shadowColorDark="@color/player_dark_shadow"
             app:neumorph_shadowColorLight="@color/player_light_shadow"
             app:neumorph_shadowElevation="@dimen/_2mdp"
             app:neumorph_shapeAppearance="@style/myneu2"
-            app:neumorph_shapeType="pressed"
-           >
+            app:neumorph_shapeType="pressed">
 
             <View
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/_48mdp"
+                android:layout_width="@dimen/_68mdp"
+                android:layout_height="@dimen/_68mdp"
                 android:background="@drawable/gradient_blue" />
 
             <ImageView
                 android:id="@+id/play_icon"
-                android:layout_width="@dimen/_40mdp"
-                android:layout_height="@dimen/_40mdp"
+                android:layout_width="@dimen/_60mdp"
+                android:layout_height="@dimen/_60mdp"
                 android:background="?android:selectableItemBackground"
                 android:backgroundTint="@color/white"
                 android:clickable="true"
@@ -277,10 +284,12 @@
             app:neumorph_shapeAppearance="@style/myneu"
             app:neumorph_shapeType="flat"
             tools:ignore="MissingConstraints">
+
             <View
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/_32mdp"
                 android:background="@drawable/gradient_blue" />
+
             <ImageView
                 android:id="@+id/repeatOne_icon"
                 android:layout_width="@dimen/_24mdp"
@@ -307,10 +316,12 @@
             app:neumorph_shapeAppearance="@style/myneu"
             app:neumorph_shapeType="pressed"
             tools:ignore="MissingConstraints">
+
             <View
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/_32mdp"
                 android:background="@drawable/gradient_blue" />
+
             <ImageView
                 android:id="@+id/repeatAll_icon"
                 android:layout_width="@dimen/_24mdp"
@@ -334,19 +345,21 @@
             app:constraint_referenced_ids="next,repeatAll,shuffle,repeatOne,prev"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:neumorph_shapeAppearance="@style/myneu2"
-           >
-        </androidx.constraintlayout.helper.widget.CircularFlow>
+            app:layout_constraintVertical_bias="0.0"
+            app:neumorph_shapeAppearance="@style/myneu2"/>
+
         <soup.neumorphism.NeumorphCardView
             android:id="@+id/center"
             android:layout_width="@dimen/_56mdp"
             android:layout_height="@dimen/_56mdp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/play"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/seekBarLayout"
+            app:layout_constraintTop_toTopOf="parent"
             app:neumorph_backgroundColor="@color/background_player"
             app:neumorph_shadowColorDark="@color/player_dark_shadow"
             app:neumorph_shadowColorLight="@color/player_light_shadow"
@@ -367,8 +380,8 @@
                 android:backgroundTint="@color/white"
                 android:clickable="true"
                 android:focusable="true"
-                android:paddingStart="@dimen/_4mdp"
                 android:padding="@dimen/_3mdp"
+                android:paddingStart="@dimen/_4mdp"
                 android:src="@drawable/ic_round_music_note_24"
                 app:tint="@color/black" />
         </soup.neumorphism.NeumorphCardView>

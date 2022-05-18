@@ -35,12 +35,13 @@
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
         </service>
+
         <receiver
             android:name=".broadcastreciever.NotificationBroadcastReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="ACTION_PREVIOUs" />
+                <action android:name="ACTION_PREVIOUS" />
                 <action android:name="ACTION_PLAY_PAUSE" />
                 <action android:name="ACTION_NEXT" />
                 <action android:name="ACTION_CANCEL" />

@@ -12,7 +12,7 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.example.musicplayer.activities.AudioModel
+import com.example.musicplayer.model.AudioModel
 import com.example.musicplayer.R
 import com.example.musicplayer.viewmodel.SharedViewModel
 import com.example.musicplayer.viewpageradapter.ViewPagerAdapter

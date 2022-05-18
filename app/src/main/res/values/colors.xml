@@ -8,6 +8,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="background_player">#241427</color>
-    <color name="player_light_shadow">#6D696E</color>
-    <color name="player_dark_shadow">#FF000000</color>
+    <color name="player_light_shadow">#E66D696E</color>
+    <color name="player_dark_shadow">#E6000000</color>
+    <color name="light_blue">#36dfe5</color>
+    <color name="transparent">#0036DFE5</color>
 </resources>

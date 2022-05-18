@@ -7,7 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import com.example.musicplayer.*
-import com.example.musicplayer.activities.AudioModel
+import com.example.musicplayer.model.AudioModel
 import com.example.musicplayer.activities.PlayerActivity
 import com.example.musicplayer.databinding.FragmentFilteredSongsBinding
 import com.example.musicplayer.service.MusicService
@@ -24,6 +24,7 @@ class FilteredSongsFragment : Fragment(R.layout.fragment_filtered_songs) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentFilteredSongsBinding.bind(view)
         musicAdapter = MusicAdapter(::onClick)
+        binding.recyclerView.adapter = musicAdapter
         var list = listOf<String>()
         if (args.album != null) {
             mediaList = sharedViewModel.audioList.filter {
@@ -43,7 +44,6 @@ class FilteredSongsFragment : Fragment(R.layout.fragment_filtered_songs) {
         }
 
         musicAdapter.submitList(list.distinct())
-        binding.recyclerView.adapter = musicAdapter
     }
 
     private fun onClick(input: Int) {
