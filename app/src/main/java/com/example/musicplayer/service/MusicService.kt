@@ -59,25 +59,6 @@ class MusicService : Service() {
             mediaPlayer.start()
             mediaPlayer.isLooping = false
             handleCompletion()
-         /*   val intent = Intent(this@MusicService, MainActivity::class.java).apply {
-                setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            }
-*/
-            // updateNotification()
-            /* val pendingIntent: PendingIntent = PendingIntent.getActivity(this@MusicService, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-
-             val notification = NotificationCompat.Builder(this@MusicService, CHANNEL_ID)
-                 .setSmallIcon(R.drawable.play)
-                 .setContentTitle(mediaList[index.value!!].title)
-                 .setContentText(mediaList[index.value!!].artist)
-                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                 .setVisibility(VISIBILITY_PUBLIC)
-                 .setContentIntent(pendingIntent)
-                 .setOnlyAlertOnce(true)
-                 .build()
-             startForeground(111, notification)
- */
-            // stopSelf(msg.arg1)
         }
     }
 
@@ -164,8 +145,7 @@ class MusicService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "music play channel"
             val descriptionText = "notification when music is playing"
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+            val channel = NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_HIGH).apply {
                 description = descriptionText
             }
 
@@ -178,7 +158,15 @@ class MusicService : Service() {
     fun startPlaying(index: Int) {
         Log.d(TAG, "startPlaying: " + ::mediaPlayer.isInitialized.toString() + this.index.value.toString())
         // handling rotation and opening player activity with a different song while the former is playing is implemented here too
-        if(::mediaPlayer.isInitialized && this.index.value != index) mediaPlayer.stop()
+        if(::mediaPlayer.isInitialized && this.index.value != index){
+            mediaPlayer.stop()
+            mediaPlayer.release()
+            this.index.value = index
+            serviceHandler?.obtainMessage()?.also { msg ->
+                msg.arg1 = startId!!
+                serviceHandler?.sendMessage(msg)
+            }
+        }
         if (!::mediaPlayer.isInitialized){
             this.index.value = index
             serviceHandler?.obtainMessage()?.also { msg ->
@@ -186,11 +174,6 @@ class MusicService : Service() {
                 serviceHandler?.sendMessage(msg)
             }
         }
-      /*  if(::mediaPlayer.isInitialized && this.index.value == index){
-            val mediaPosition = mediaPlayer.currentPosition
-            mediaPlayer.stop()
-        }
-*/
 
     }
 
@@ -235,7 +218,6 @@ class MusicService : Service() {
 
     fun updateNotification() {
         val intent = Intent(this@MusicService, PlayerActivity::class.java).apply {
-            // todo flags??
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         val pendingIntent: PendingIntent = PendingIntent.getActivity(this@MusicService, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
@@ -252,7 +234,7 @@ class MusicService : Service() {
         val cancelIntent = Intent(this, MusicService::class.java).setAction(ACTION_CANCEL)
         val cancelPending = PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
-        val currentSong = mediaList[handleIndexBound(index.value!!)]// todo why elvis
+        val currentSong = mediaList[handleIndexBound(index.value!!)]
         val bitmapImage: Bitmap?
         if (currentSong.coverImage != null) {
             bitmapImage = BitmapFactory.decodeByteArray(currentSong.coverImage, 0, currentSong.coverImage.size)

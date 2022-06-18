@@ -26,6 +26,7 @@ import com.example.musicplayer.databinding.FragmentPlayerBinding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.Exception
+import java.lang.IllegalStateException
 import java.util.concurrent.TimeUnit
 
 class PlayerActivity : AppCompatActivity(), ServiceConnection {
@@ -33,7 +34,6 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
     private var _binding: FragmentPlayerBinding? = null
     private val binding get() = _binding!!
     private lateinit var t: Thread
-    private var repeatAll = true
     private lateinit var musicService: MusicService
     private var mBound = false
 
@@ -72,8 +72,9 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
         lifecycleScope.launch {
 
             while (mBound == false) {
-                delay(10)
+                delay (10)
             }
+
             if (index != -1) musicService.startPlaying(index)
 
             var temp1 = false
@@ -86,6 +87,8 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
                     updateSeekbar()
                     temp1 = true
                 } catch (e: UninitializedPropertyAccessException) {
+                    delay(10)
+                }catch (e: IllegalStateException){
                     delay(10)
                 }
                 if (temp1) break
@@ -167,7 +170,6 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
             musicService.mediaPlayer.stop()
             musicService.mediaPlayer.prepare()
             val temp = musicService.index.value!!
-           // musicService.index.postValue(handleIndexBound(temp+1))
             musicService.index.value = handleIndexBound(temp+1)
             Log.d(
                 "ahmadabadi", "next clicked " + musicService.index.value.toString()
@@ -180,9 +182,7 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
             musicService.mediaPlayer.stop()
             musicService.mediaPlayer.prepare()
             val temp = musicService.index.value!!
-           // musicService.index.postValue(handleIndexBound(temp - 1))
             musicService.index.value = handleIndexBound(temp-1)
-
             Log.d("ahmadabadi", "previous clicked " + musicService.index.value.toString())
             binding.playIcon.setImageResource(R.drawable.pause)
             binding.play.setShapeType(1)
@@ -212,17 +212,11 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
         }
         binding.centerIcon.setOnClickListener {
             startMusicIconAnim()
-
         }
     }
 
     private fun startMusicIconAnim() {
-        val rotateAnimation: Animation
         if (!binding.circularFlow.isGone) {
-            rotateAnimation = RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f).apply {
-                duration = 1000
-                interpolator = BounceInterpolator()
-            }
             val alphaAnimation = AlphaAnimation(1f, 0f).apply {
                 duration = 400
             }
@@ -233,7 +227,6 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
             binding.repeatOne.startAnimation(alphaAnimation)
             ValueAnimator.ofInt(96, -10).apply {
                 duration = 500
-                //interpolator = AnticipateInterpolator()
                 start()
                 addUpdateListener {
                     binding.circularFlow.updateRadius(binding.prev, this.animatedValue as Int)
@@ -252,10 +245,7 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
             }
         } else {
             binding.circularFlow.isGone = !binding.circularFlow.isGone
-            rotateAnimation = RotateAnimation(360f, 0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f).apply {
-                duration = 1000
-                interpolator = BounceInterpolator()
-            }
+
             val alphaAnimation = AlphaAnimation(0f, 1f).apply {
                 duration = 700
                 interpolator = AccelerateInterpolator()
@@ -267,7 +257,6 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
             binding.repeatOne.startAnimation(alphaAnimation)
             ValueAnimator.ofInt(-10, 96).apply {
                 duration = 500
-                // interpolator = AnticipateInterpolator()
                 start()
                 addUpdateListener {
                     binding.circularFlow.updateRadius(binding.prev, this.animatedValue as Int)
@@ -279,7 +268,7 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
             }
 
         }
-        binding.center.startAnimation(rotateAnimation)
+
     }
 
     private fun handleIndexBound(i: Int): Int {
@@ -296,6 +285,7 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
             val song = MusicService.mediaList[handleIndexBound(it)]
             try {
                 binding.songTime.text = computeTime(musicService.mediaPlayer.duration)
+                binding.seekBar.max = musicService.mediaPlayer.duration
             }catch (e: Exception){
                 //todo
             }
@@ -310,8 +300,8 @@ class PlayerActivity : AppCompatActivity(), ServiceConnection {
                 binding.coverImage.setImageResource(R.drawable.music)
                 binding.backgroundImage.setImageResource(R.drawable.music)
             }
-
-            musicService.updateNotification()//todo a bug when it's the last song
+            musicService.updateNotification()
+            //todo a bug when it's the last song
         }
     }
 
