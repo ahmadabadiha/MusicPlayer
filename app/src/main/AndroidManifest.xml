@@ -23,11 +23,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.PlayerActivity"
+            android:name="com.example.musicplayer.activities.PlayerActivity"
             android:exported="true" />
 
         <service
-            android:name=".service.MusicService"
+            android:name="com.example.musicplayer.service.MusicService"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
@@ -37,7 +37,7 @@
         </service>
 
         <receiver
-            android:name=".broadcastreciever.NotificationBroadcastReceiver"
+            android:name="com.example.musicplayer.broadcastreciever.NotificationBroadcastReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>

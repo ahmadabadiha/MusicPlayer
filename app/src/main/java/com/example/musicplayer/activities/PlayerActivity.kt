@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.graphics.BitmapFactory
-import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -20,9 +19,9 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
 import androidx.lifecycle.lifecycleScope
-import com.example.musicplayer.service.MusicService
 import com.example.musicplayer.R
 import com.example.musicplayer.databinding.FragmentPlayerBinding
+import com.example.musicplayer.service.MusicService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.Exception

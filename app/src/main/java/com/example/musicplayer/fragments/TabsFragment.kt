@@ -12,28 +12,22 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.example.musicplayer.model.AudioModel
 import com.example.musicplayer.R
+import com.example.musicplayer.databinding.FragmentTabsBinding
+import com.example.musicplayer.model.AudioModel
 import com.example.musicplayer.viewmodel.SharedViewModel
 import com.example.musicplayer.viewpageradapter.ViewPagerAdapter
-import com.example.musicplayer.databinding.FragmentTabsBinding
 import com.google.android.material.tabs.TabLayoutMediator
 
 
-class TabsFragment: Fragment() {
+class TabsFragment : Fragment(R.layout.fragment_tabs) {
     private val sharedViewModel: SharedViewModel by activityViewModels()
-    private lateinit var binding: FragmentTabsBinding
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_tabs, container, false)
-        return binding.root
-    }
+    private var _binding: FragmentTabsBinding? = null
+    private val binding get() = _binding!!
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentTabsBinding.bind(view)
         sharedViewModel.audioList = getAllAudioFromDevice(requireContext())
         binding.viewPager.apply {
             adapter = ViewPagerAdapter(childFragmentManager, lifecycle)
@@ -46,6 +40,7 @@ class TabsFragment: Fragment() {
             }
         }.attach()
     }
+
     private fun getAllAudioFromDevice(context: Context): List<AudioModel> {
         val tempAudioList: MutableList<AudioModel> = ArrayList()
         val projection =
